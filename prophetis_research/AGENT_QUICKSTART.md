@@ -1,0 +1,341 @@
+# Prophetis Agent Quickstart
+
+这份文档给使�?Codex、Claude Code 或其他代码型 agent 的研究者一个执行入口：如何引用本项目做股票、产业、ETF、财报和宏观经济分析�?
+
+用户侧的统一入口卡是 [START_HERE.md](START_HERE.md)。当用户问“怎么�?Prophetis / Prophetis help / start here / Prophetis 能做什么”，或只�?`hi Prophetis` / `你好 Prophetis` / `Prophetis mode` 时，优先返回 `START_HERE.md` 的分层入口和 Help 矩阵；本文件继续维护 agent 执行规则、路由、输出位置和证据纪律�?
+
+Prophetis 不是一个自动荐股器，也不是后台行情机器人。它是一套可复核的投研工作流：先路由研究类型，再选择框架和证据路径，最后输出带来源链、时效边界和刷新条件的研究包�?
+
+Prophetis 也是本项目的唤醒词。完整定义见 [Prophetis.md](Prophetis.md)：Mira 是有名字的研究协议，不是会替代证据判断的虚构人格�?
+
+如果只想在普�?ChatGPT 对话里使�?Prophetis 的研究纪律，而不是让代码 agent 读取整个仓库，可以直接复�?[docs/chatgpt-conversation-instructions.md](docs/chatgpt-conversation-instructions.md) 里的 instruction pack�?
+
+## 1. Agent 入口
+
+### 更新和启�?
+
+| 场景 | 命令 | 说明 |
+| --- | --- | --- |
+| 用户明确要更�?Prophetis 本体 | `scripts/Prophetis_update.sh` | 安全更新入口；会 fetch、拒�?dirty/ahead/diverged，并在成功后校验仓库�?|
+| `standard` / `deep_dive` 研究前检�?freshness | `scripts/check_updates.sh` | 默认就是 local-first：TTL（默�?24h）内只比缓存�?remote refs，不联网；超�?TTL �?fetch 一次。只报告是否落后，不自动更新�?|
+| 自定�?TTL 窗口 | `scripts/check_updates.sh --ttl-hours N` | N 小时内不重复联网；`--ttl-hours 0` 每次都尝�?fetch�?|
+| 想立刻查一次远端（忽略 TTL 缓存�?| `scripts/check_updates.sh --always-fetch` | 每次都联�?fetch，用�?现在确认 Prophetis 是否最�?�?|
+| 离线或权限受限时只比较本�?remote refs | `scripts/check_updates.sh --no-fetch` | 完全不联网，结果可能基于�?refs；优先级高于其它模式�?|
+| 想让检查脚本在发现落后时询问更�?| `scripts/check_updates.sh --prompt` | 只适合�?upstream 的普通分支�?|
+
+原则（分�?freshness gate）：
+- `quick_map` / 看一下：默认 **不跑** freshness check，一次�?triage 不值得联网�?
+- `standard` / `deep_dive`：跑 `scripts/check_updates.sh`（默�?local-first）。TTL 内是瞬时 local 比较；TTL 过期才联网一次。想立刻强制查远端用 `--always-fetch`�?
+- 真正联网更新只在用户明确说“更�?Prophetis”时�?`scripts/Prophetis_update.sh` 承担——这时不要先�?freshness check�?
+- 沙箱�?*不要�?freshness check 提权**。fetch 被拦就软降级�?local refs，并在输出里写一�?`Prophetis protocol remote freshness not checked; using local refs.`；检查状态记录在 gitignored �?`local/Prophetis-update-check.json`（`last_attempt_at` 每次尝试都写、用于节流重试；`status` 记录上次结果 `ok` / `fetch_failed`；`last_remote_check_at` 只在成功时更新，TTL 的“已检查”判断只认它）�?
+
+### 用户入口
+
+面向用户�?prompt 不在本文件重复维护，统一�?[START_HERE.md](START_HERE.md)。短入口、完整任务卡、Help 类型矩阵和边界说明都以该文件为准�?
+
+### Codex
+
+�?Codex 中打开本仓库后，根目录�?[AGENTS.md](AGENTS.md) 会提供默认项目规则，[Prophetis.md](Prophetis.md) 会定义唤醒词�?memory 边界。用户入口提示统一�?[START_HERE.md](START_HERE.md) 摘要�?
+
+用户需要示例时，返�?[START_HERE.md](START_HERE.md) 的摘要，不从本文件复�?prompt�?
+
+### Claude Code
+
+Claude Code 默认读取根目�?[CLAUDE.md](CLAUDE.md)。该文件会要�?Claude 同步遵守 [AGENTS.md](AGENTS.md)、[Prophetis.md](Prophetis.md) 和本 quickstart�?
+
+## 2. 最小任务卡
+
+完整用户任务卡的 canonical 版本�?[START_HERE.md](START_HERE.md)。缺字段时，agent 应该先做合理补全或提出最少问题；不要在本文件维护第二份任务卡�?
+
+## 3. 路由规则
+
+正式分析前必须先运行 [loops/analysis-routing.md](loops/analysis-routing.md)，不要直接套股票模板�?
+
+路由第一步是 Step 0 意图入口：先把复�?prompt 拆成 `primary_intent` / `secondary_intents`，显式声明本轮运行假设，并按 `depth_mode` 给出可缩放的路由卡（quick_map 只需一行假设条）。如果问题接近“能不能�?/ �?/ �?/ �?/ �?/ �?/ 抄底 / 目标价到了还能买”或 position / portfolio，必须同时跑 Step 0.5 decision pressure gate：标�?`decision_pressure` �?`framing_risk`（锚问题不锚人、瞬时不存储），压力�?medium/high 时给一个反向检验，并在 actionability posture 前跑 `data/marginal-buyer-payoff-bridge.md`。选定 depth 后，�?Step 3.3 校验信息价值和可知性；主导变量不可知时输出 `irreducible_uncertainty`，不要强行深挖�?
+
+如果 context 紧张，先�?[OPERATING_CONTRACT.md](OPERATING_CONTRACT.md)。它给出最�?loading map：每一步只读当前需要的 loop、skill 或模板�?
+
+先确�?`depth_mode`，避免快看被完整模板拖慢，也避免正式研究缺少证据�?
+
+| depth_mode | 默认场景 | 输出边界 |
+| --- | --- | --- |
+| `quick_map` | “看一下”、早�?triage、来源边界不完整 | routing card、核心判断、source notes、source gaps、refresh triggers�? �?light follow-up 或显�?waiver |
+| `standard` | “研�?X”、正�?case、普通财报或 monitoring update | routed package 的必需文件 |
+| `deep_dive` | “深挖”、长�?thesis、复杂估值、SEC 深拆、PM / 方法论复�?| 完整 package + �?gate 触发的附�?artifact |
+
+显式输出哪些字段�?[data/output-surface-matrix.md](data/output-surface-matrix.md) 控制。原则是：短答可以少露字段，但不能少做证据、刷新条件、follow-up 和触发式 gate 的内部检查。Mira 只保�?`quick_map` / `standard` / `deep_dive` 三个输出 surface；`quick_answer` 只是 `interaction_mode`，表示答案要直接、短，但仍渲染到某个 depth surface�?
+
+注意 `interaction_mode`（答案形状，Step 0）和 `depth_mode`（研究力度）是两个轴，别因为都带 “quick�?就混用：`quick_answer + quick_map`（看一下方向，浅研究一句话）、`quick_answer + deep_dive`（只要一句结论，但问题需要真估值才答得诚实）、`routed_research + quick_map`（triage 但仍出结构化卡）。组合样例见 [examples/routing-examples.md](examples/routing-examples.md)�?
+
+| 用户意图 | 默认路由 | 输出 |
+| --- | --- | --- |
+| 首次研究或重�?thesis | [loops/research-loop.md](loops/research-loop.md) | `investment-memo.md`, `case-notes.md`, `evidence-log.csv` |
+| 更新已有 thesis | [loops/monitoring-loop.md](loops/monitoring-loop.md) | monitor summary, impact assessment, escalation decision |
+| 日报 / 周报 / 盘前简�?/ 收盘复盘 | [loops/market-briefing-loop.md](loops/market-briefing-loop.md) | market brief, driver map, calendar, escalation queue |
+| 更新 thesis object / 看预期差 / 复盘判断 | [loops/thesis-update-loop.md](loops/thesis-update-loop.md) | thesis-ledger, expectation-map, decision-log, postmortem |
+| 事件前后 delta | [loops/event-delta-loop.md](loops/event-delta-loop.md) | event-delta, expectation map update, thesis impact |
+| 财报、业绩会、指�?| [skills/earnings-report-analysis/SKILL.md](skills/earnings-report-analysis/SKILL.md) | earnings package |
+| 研报、目标价、评级、用户提供报�?PDF | [skills/research-report-interpretation/SKILL.md](skills/research-report-interpretation/SKILL.md) | report readout, claim map, evidence log |
+| SEC 补充核验 | [skills/sec-filing-analysis/SKILL.md](skills/sec-filing-analysis/SKILL.md) | `sec-supplement-source-note.csv` + active case updates |
+| SEC 文件专项拆解 | [skills/sec-filing-analysis/SKILL.md](skills/sec-filing-analysis/SKILL.md) | SEC filing analysis package |
+| �?thesis / PM 研究 book 视角 | [loops/portfolio-review-loop.md](loops/portfolio-review-loop.md) | thesis register, exposure notes, follow-up queue |
+| 单一真实头寸复盘 | [loops/position-review-loop.md](loops/position-review-loop.md) | position review, sizing context, required research follow-up |
+| 真实组合结构复盘 | [loops/portfolio-construction-review-loop.md](loops/portfolio-construction-review-loop.md) | portfolio exposure review, duplicate-bet notes, position-review queue |
+| 决策质量复盘 | [loops/decision-quality-review-loop.md](loops/decision-quality-review-loop.md) | decision-quality review, postmortem, methodology update candidate |
+| 单一股票 | [skills/equity-research-core/SKILL.md](skills/equity-research-core/SKILL.md) | research package |
+| 产业、技术、供应链概念 | [skills/industry-concept-analysis/SKILL.md](skills/industry-concept-analysis/SKILL.md) | industry package |
+| 宏观、利率、通胀、美元、信用、流动�?| [skills/macro-economic-analysis/SKILL.md](skills/macro-economic-analysis/SKILL.md) | macro note �?macro overlay |
+| ETF 新发或上市结�?| `skills/etf-listing-*` | ETF discovery / listing package |
+| 研究方法是否靠谱 | [loops/methodology-research-loop.md](loops/methodology-research-loop.md) | methodology artifacts |
+
+如果路由进入单票研究，还必须继续运行�?
+
+- [skills/equity-research-core/references/thesis-horizon-routing.md](skills/equity-research-core/references/thesis-horizon-routing.md)
+- [skills/equity-research-core/references/framework-routing.md](skills/equity-research-core/references/framework-routing.md)
+- [skills/equity-research-core/references/overlay-routing.md](skills/equity-research-core/references/overlay-routing.md)，如果专题证据路径有增量价�?
+
+## 4. 用户 prompt 源头
+
+用户可见 prompt、完整任务卡和按任务类型�?Help 矩阵统一维护�?[START_HERE.md](START_HERE.md)。本 quickstart 不维护第二份 prompt 菜单；需要选择执行 loop �?artifact 时，使用上面的路由表和下面的输出位置�?
+
+## 5. 输出位置
+
+新研究建议放�?[cases/](cases)�?
+
+```text
+cases/<object>-<YYYY-MM>/
+```
+
+常见输出结构�?
+
+```text
+cases/<ticker>-<YYYY-MM>/
+├── README.md
+├── research-package-manifest.json
+├── investment-memo.md
+├── case-notes.md
+└── evidence-log.csv
+```
+
+财报事件�?
+
+```text
+cases/<ticker>-<YYYY-MM>/
+├── README.md
+├── research-package-manifest.json
+├── earnings-analysis.md
+├── event-delta.md
+├── financial-snapshot.csv
+├── peer-comparison.csv
+└── evidence-log.csv
+```
+
+研报解读�?
+
+```text
+cases/<object>-<YYYY-MM>/
+├── README.md
+├── report-readout.md
+├── report-claim-map.csv
+├── evidence-log.csv
+└── restricted-source-note.md   # paid/licensed/user-provided reports only
+```
+
+市场日报/周报（briefing 按市场范�?+ 月份归档，escalation queue 跨期累积）：
+
+```text
+cases/<market_scope>-briefing-<YYYY-MM>/
+├── README.md
+├── daily-brief-<YYYY-MM-DD>.md
+├── close-wrap-<YYYY-MM-DD>.md
+├── weekly-review-<YYYY>-W<ww>.md
+└── escalation-queue.csv
+```
+
+用户私有观点和工作视图默认位置：
+
+```text
+private/views/view-register.csv
+private/research/<OBJECT>/
+├── working-view.md
+├── thesis-ledger.md
+└── expectation-map.csv
+```
+
+`private/` 已被 gitignore，用于用户私有状态，不随 Prophetis 本体更新提交。模板见 [templates/private-state/](templates/private-state)，执行规则见 [loops/view-continuity-loop.md](loops/view-continuity-loop.md)�?
+
+如果 case 已有 `README.md` �?`evidence-log.csv`，可以生成或刷新 manifest�?
+
+```sh
+python3 scripts/generate_case_manifests.py cases/<case-id>
+python3 scripts/generate_case_manifests.py --all
+```
+
+Thesis System 产品样例或公共对象：
+
+```text
+memory/research/<OBJECT>/
+├── thesis-ledger.md
+├── expectation-map.csv
+├── decision-log.csv
+└── postmortem.md
+```
+
+决策质量复盘模板�?
+
+```text
+templates/outcome-review/decision-quality-review.md
+```
+
+PM / 组合研究对象�?
+
+```text
+memory/research/INDEX.md
+templates/portfolio-system/portfolio-register.csv
+templates/portfolio-system/position-register.csv
+templates/portfolio-system/position-review.md
+templates/portfolio-system/portfolio-construction-review.md
+templates/portfolio-system/portfolio-exposure-review.csv
+```
+
+产业概念�?
+
+```text
+cases/<concept>-<YYYY-MM>/
+├── README.md
+├── industry-map.md
+├── company-map.csv
+└── evidence-log.csv
+```
+
+模板�?[templates/](templates)�?
+
+## 5.1 完整样板
+
+优先参考：
+
+- [cases/aapl-2026-04/](cases/aapl-2026-04/)：标准单�?research package，包�?`investment-memo.md`、canonical `evidence-log.csv`、`expectation-map.csv` �?`actionability-bridge.md`�?
+- [cases/aapl-2026-04/](cases/aapl-2026-04/) 也是 golden case：case 包内放了 `thesis-ledger.md` �?`decision-log.csv`，用�?agent few-shot�?
+- [cases/nvts-2026-05/](cases/nvts-2026-05/)：财报事件样板，包含 earnings package、同行验证、canonical `evidence-log.csv`、`expectation-map.csv` �?`actionability-bridge.md`�?
+
+PM / 组合研究视角的产品样例可参�?[memory/research/INDEX.md](memory/research/INDEX.md)。用户私有组合、持仓和观点默认使用 `private/portfolio/` �?`private/views/view-register.csv`�?
+
+交付前用 [templates/delivery-checklist.md](templates/delivery-checklist.md) 做自检�?
+
+状态和动作字段必须使用 [data/controlled-vocabulary.md](data/controlled-vocabulary.md)。如果需要更细解释，写到 `basis`、`notes`、`risk` 或正文，不要发明�?token�?
+
+### 强习惯三件套
+
+每次正式研究输出收尾前，先做一个很短的最终门槛检查：
+
+1. **证据强度**：事实、推断、判断是否分层；耐久结论是否能追�?evidence log 或明�?source note�?
+2. **刷新条件**：是否写�?`stale_after`、`must_refresh_if` 或等价刷新条件�?
+3. **渐进反问**：是否写�?`followup_prompt_mode` �?1-3 �?route-bound、object-specific follow-up；如果没有，是否显式�?`followup_prompt_mode=none` 和具�?waiver reason�?
+
+不要�?progressive follow-up 当成可选闲聊。它和刷新条件一样，是防止研究输出停在不可升级状态的交付字段；`quick_map` 默认至少�?1 �?light follow-up，除非用户明确不要反问、任务是机械更新/格式转换，或下一步已经唯一确定�?
+
+�?[data/output-surface-matrix.md](data/output-surface-matrix.md) 判断这些强习惯应该是 `internal_check`、`brief_visible` 还是 `full_visible`。强习惯不能被省略，但不必在每个短答里展开成完整表格�?
+
+## 6. 证据和结论规�?
+
+Prophetis 输出里必须分开写：
+
+- `facts`: 已核验事实、披露数据、官方数据或可复核市场数据�?
+- `inferences`: 基于事实链推出的解释�?
+- `judgments`: 投资判断、权重、概率和风险取舍�?
+
+所有耐久结论必须有来源链。若来源弱，只能写成弱信号或待验证假设，不能写成结论�?
+
+每份正式输出必须包含至少一个刷新条件：
+
+- `stale_after`: 这份判断在什么日期或事件后默认过期�?
+- `must_refresh_if`: 哪些信息出现时必须重做或更新�?
+- `kill_criteria`: 哪些证据会证伪主�?thesis�?
+
+每份正式输出也必须包含渐进反问：
+
+- `followup_prompt_mode`: `light` / `standard` / `decision_grade` / `none`�?
+- route-bound follow-up: 问题要连接当�?route、对象、证据缺口、readiness 或下一�?loop�?
+- `followup_waiver_reason`: 只有在不�?follow-up 时才需要，且必须具体�?
+
+## 7. 拟人化和记忆边界
+
+可以�?`Prophetis` 当成自然调用入口，例如“`Prophetis, 更新 NVDA`”。但 Prophetis 的核心不是人格，而是投研协议�?
+
+允许记住�?
+
+- 稳定的用户偏好，例如市场范围、语言、输出深度、关注行业�?
+- 经过案例验证的方法论�?
+- 有来源、有日期、有刷新条件的研究结论�?
+
+不允许记住：
+
+- 没有来源的市场观点�?
+- 一次性闲聊或短期情绪�?
+- 会影响证据判断的主观偏好，例如默认看多或默认看空�?
+- 未验证却被写成长期事实的假设�?
+
+如果需要写入长期记忆，先按 [memory/MEMORY-RULES.md](memory/MEMORY-RULES.md) �?[Prophetis.md](Prophetis.md) 检查�?
+
+## 8. 快速检查清�?
+
+交付前，agent 应检查：
+
+- 是否记录 `task_mode`, `research_object`, `market_scope`, `time_boundary`�?
+- 是否完成总路由，而不是直接套模板�?
+- 是否先做 Step 0 意图入口：拆分复合意图、声明运行假设、按 depth 给出路由卡�?
+- 若问题涉�?actionability / position / portfolio，是否输�?`decision_pressure`，压力高时是否给 disconfirmation�?
+- 是否做了信息价�?/ 可知性判断；主导变量不可知时是否诚实输出 `irreducible_uncertainty`，而非强行深挖�?
+- 若使用新文件、API、vendor export �?portfolio/risk 数据，是否先�?ingestion layer 并记录权限、as-of、field mapping �?evidence/calculation 映射�?
+- 正式判断是否�?`judgment_confidence`、`confidence_basis` �?`reversal_condition`�?
+- 同一会话�?carryover 是否只沿用范�?/ 时间 / 对象等白名单字段，未把偏误读数当长期偏好�?
+- 是否遵守 [Prophetis.md](Prophetis.md) 的唤醒词、人格边界和 memory 规则�?
+- 单票研究是否写明 `horizon_bucket`, `selected_framework`, `selected_overlays`�?
+- 若维护已�?thesis，是否更新或明确 waived `thesis-ledger`、`expectation-map` �?state change�?
+- 若处理事件，是否写出 `event-delta`，而不是只做新闻摘要�?
+- 事实、推断和判断是否分层�?
+- 核心结论是否能追�?evidence log 或明�?source note�?
+- 是否说明 `stale_after`、`must_refresh_if` 或等价刷新条件�?
+- 是否说明 `followup_prompt_mode`，并给出 route-bound、object-specific follow-up；若没有，是否写明具�?waiver reason�?
+- 弱证据是否被降级，没有被写成确定结论�?
+
+## 9. Repo Validation
+
+新增或更新正�?case 后，运行�?
+
+```text
+python3 scripts/validate_repo.py cases/<case-id>
+```
+
+迁移历史 case 时可以先�?report-only 模式查看问题�?
+
+```text
+python3 scripts/validate_repo.py --report-only
+```
+
+当前 canonical evidence schema �?[data/evidence-log-schema.md](data/evidence-log-schema.md)。新�?`evidence-log.csv` 必须�?claim-level 表，不再允许�?source registry 表头直接放入 evidence log�?
+
+SEC supplement �?SEC filing deep dive 还可以额外跑�?
+
+```sh
+python3 scripts/validate_sec_filing_package.py templates/sec-supplement-source-note.csv
+python3 scripts/validate_sec_filing_package.py templates/sec-filing-analysis-package
+```
+
+上面的脚本校验的�?*语法**（schema、词表、路由卡 token）。要校验**行为**——模型在真实回答里是否真的做了契约要求的事（决策压力下的反向检验、弱证据降级、不可知时的诚实终态、无持仓不给仓位），跑行为级 eval�?
+
+`examples/routing-json-examples.md` 中的 JSON code block 也会�?
+`scripts/validate_repo.py` �?`schemas/routing.schema.json` 校验；更�?routing
+示例时不要只改可�?markdown 卡片�?
+
+```sh
+python3 scripts/score_behavior_eval.py --transcripts evals/transcripts
+```
+
+严格覆盖检查使用：
+
+```sh
+just eval-strict
+```
+
+普�?eval 允许用例先于 transcript 增长；严�?eval 会把缺少 transcript 当成失败。它�?[templates/delivery-checklist.md](templates/delivery-checklist.md) 的语义纪律变成对模型输出的可打分断言。用例、schema 和录�?transcript 的方法见 [evals/README.md](evals/README.md)�?

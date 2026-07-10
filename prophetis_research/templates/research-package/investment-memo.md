@@ -1,0 +1,118 @@
+# {{ company_name }} ({{ ticker }}) Investment Memo
+
+- market: {{ market }}
+- output_language: {{ output_language }}
+- research_question: {{ research_question }}
+- research_cutoff_date: {{ research_cutoff_date }}
+- task_mode: {{ task_mode }}
+- depth_mode: {{ depth_mode }}
+- research_object: {{ research_object }}
+- routing_basis: {{ routing_basis }}
+- selected_framework: {{ selected_framework }}
+- framework_basis: {{ framework_basis }}
+- selected_overlays: {{ selected_overlays }}
+- overlay_basis: {{ overlay_basis }}
+- selected_lenses: {{ selected_lenses }}
+- lens_basis: {{ lens_basis }}
+- financial_data_through: {{ financial_data_through }}
+- price_date: {{ price_date }}
+- technical_context_ref: {{ technical_context_ref }}
+- thesis_horizon: {{ thesis_horizon }}
+- horizon_bucket: {{ horizon_bucket }}
+- horizon_basis: {{ horizon_basis }}
+- stale_after: {{ stale_after }}
+- quant_dependency: {{ quant_dependency }}
+- calculation_gate: {{ calculation_gate }}
+- calculation_depth: {{ calculation_depth }}
+- calculation_status: {{ calculation_status }}
+- not_investment_advice: true
+
+## Decision Header
+
+| field | value |
+| --- | --- |
+| research_action | {{ research_action }} |
+| conviction | {{ conviction }} |
+| horizon | {{ horizon }} |
+| what_is_priced_in | {{ what_is_priced_in }} |
+| technical_context | {{ technical_context }} |
+| event_reaction_quality | {{ event_reaction_quality }} |
+| invalidation_level_or_condition | {{ invalidation_level_or_condition }} |
+| implied_risk_reward | {{ implied_risk_reward }} |
+| next_catalyst_date | {{ next_catalyst_date }} |
+
+## Core Conclusion
+
+{{ core_conclusion }}
+
+## Bull Case
+
+{{ bull_case }}
+
+## Bear Case
+
+{{ bear_case }}
+
+## Key Debate
+
+{{ key_debate }}
+
+## Valuation And Expectation Quant
+
+{{ valuation_and_expectation_quant }}
+
+For `standard` and `deep_dive`, include current valuation anchor, what is priced in, base/bull/bear scenario assumptions, downside path, and whether the valuation anchor quality is `high`, `medium`, `low`, or `source_gap`.
+
+For `quick_map`, include only the best available valuation / expectation note, explicit source gaps, and what would justify upgrading to `standard`.
+
+If this section relies on derived numbers, include `calculation-ledger` refs or explicit formula notes. If calculation was waived, state `calculation_gap` or `calculation_waived_by_speed` and downgrade actionability.
+
+## Technical / Market Pricing Context
+
+{{ technical_market_pricing_context }}
+
+Use [../../templates/technical-analysis-check.csv](../../templates/technical-analysis-check.csv) when the research action depends on current price behavior, event follow-through, volatility, liquidity, positioning or trigger / invalidation levels. Treat this section as `market_pricing` and `derived_calculation`; it cannot prove fundamental execution or thesis durability.
+
+## Actionability Bridge
+
+{{ actionability_bridge }}
+
+Use this as a research-action bridge only. Do not write autonomous trade instructions. If evidence is insufficient, set `research_action: watch_only` or `no_action`.
+
+For `quick_map`, actionability must default to `watch_only`, `needs_refresh` or `no_action` unless valuation anchor, consensus proxy, catalyst path and invalidation condition are all source-backed.
+
+## Evidence Quality
+
+{{ evidence_quality }}
+
+## Framework Mismatch Risk
+
+{{ framework_mismatch_risk }}
+
+## Thesis Horizon
+
+- routing_mismatch_risk: {{ routing_mismatch_risk }}
+- horizon_mismatch_risk: {{ horizon_mismatch_risk }}
+- earnings_to_thesis_bridge: {{ earnings_to_thesis_bridge }}
+
+Use `earnings_to_thesis_bridge: not_applicable` when the memo is not driven by an earnings event.
+
+## Overlay Takeaways
+
+{{ overlay_takeaways }}
+
+## Alpha Signals / Rumor Watch
+
+{{ alpha_signals }}
+
+## Major Risks
+
+{{ major_risks }}
+
+## Tracking Metrics
+
+{{ tracking_metrics }}
+
+## Must Refresh If
+
+{{ must_refresh_if }}

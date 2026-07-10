@@ -1,0 +1,76 @@
+{
+  "$comment": "Single source of truth for Prophetis ROUTING controlled vocabulary. Consumed by schemas/routing.schema.json (via $ref) and scripts/validate_repo.py (enum sets are built from here, not hardcoded). Round-1 scope is routing-only by design; evidence/source/readiness/claim enums stay hardcoded in validate_repo.py until a later migration. INVARIANT: every enum below lives ONLY here â€?do not also hardcode it elsewhere.",
+  "interaction_mode": {
+    "enum": ["quick_answer", "routed_research", "decision_support", "routing_unclear"]
+  },
+  "depth_mode": {
+    "enum": ["quick_map", "standard", "deep_dive"]
+  },
+  "decision_pressure": {
+    "enum": ["none", "low", "medium", "high"]
+  },
+  "framing_risk": {
+    "enum": ["confirmation_seeking", "fomo", "anchoring", "loss_aversion", "position_defense", "none"]
+  },
+  "disconfirmation_required": {
+    "enum": ["yes", "no"]
+  },
+  "quant_dependency": {
+    "enum": ["none", "low", "medium", "high"]
+  },
+  "calculation_gate": {
+    "enum": ["not_required", "required", "waived"]
+  },
+  "information_value": {
+    "enum": ["low", "medium", "high"]
+  },
+  "knowability_status": {
+    "enum": ["knowable", "partially_knowable", "unknowable_now", "irreducible_uncertainty"]
+  },
+  "question_expansion_lens": {
+    "enum": ["none", "comparison_association", "scale_shift", "trend_dynamics", "anomaly_detection"]
+  },
+  "live_data_gate": {
+    "enum": ["required_quote_time", "required_publish_time", "waived_definition", "not_applicable"]
+  },
+  "live_freshness_status": {
+    "enum": ["live", "delayed", "stale", "unavailable"]
+  },
+  "cross_check_status": {
+    "enum": ["passed", "partial", "failed"]
+  },
+  "scope_confirmation_required": {
+    "enum": ["yes", "no"]
+  },
+  "followup_prompt_mode": {
+    "enum": ["none", "light", "standard", "decision_grade"]
+  },
+  "critical_interaction_mode": {
+    "enum": ["blocking_clarification", "progressive_followup", "workflow_handoff", "followup_answer_continuation", "waive_with_reason"]
+  },
+  "active_followup_status": {
+    "enum": ["none", "open", "answered", "expired", "waived"]
+  },
+  "answer_match_confidence": {
+    "enum": ["low", "medium", "high"]
+  },
+  "task_mode": {
+    "enum": [
+      "first_pass_research",
+      "monitoring_update",
+      "market_briefing",
+      "earnings_event",
+      "research_report_interpretation",
+      "methodology_review",
+      "sec_supplement",
+      "sec_filing_deep_dive",
+      "thesis_system_update",
+      "view_continuity",
+      "position_review",
+      "portfolio_review",
+      "portfolio_construction_review",
+      "decision_quality_review",
+      "discovery_or_screening"
+    ]
+  }
+}

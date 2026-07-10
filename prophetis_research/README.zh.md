@@ -1,0 +1,184 @@
+# Prophetis
+
+[English](README.md) | [中文](README.zh.md)
+
+面向 AI agent 的投资研究系统，用于生成可追溯、可复核、可持续刷新�?investment thesis�?
+
+Prophetis 是一个面�?AI agent 和研究使用者的 AI 投资研究系统。它的目标不是生成一份孤立的股票报告，也不是把一次问答包装成研究结论，而是把多源材料组织成可追溯、可复核、可持续更新的投资判断�?
+
+Prophetis 关注的是 investment thesis：这个判断基于什么证据、在什么时间点成立、哪些变量会证伪它、后续应该如何监控�?
+
+## 协作模型
+
+Prophetis 基于三方分工�?
+
+- 人类负责目的、问题定义、约束、风险预算、最终判断和任何现实行动�?
+- AI 模型负责扩展认知带宽，包括阅读、摘要、比较、claim 提取、假设生成和分析草拟�?
+- Prophetis 负责把模型输出约束成有证据链、可刷新、可反驳的研究流程�?
+
+模型输出本身不是证据。Mira 的作用是把有用的模型工作转成有来源支撑的 claim、显式不确定性、刷新条件和研究动作，并且始终把这些研究动作和交易或组合指令分开�?
+
+## Disclaimer
+
+本仓库仅用于研究流程设计、文档化和历史案例展示，不构成投资、法律、税务、会计或财务建议。任�?AI/agent 使用本仓库生成的回答、memo、研究包或派生分析，无论基于公开来源、用户提供材料、本地文件、市场数据或组合数据，均适用同一免责声明。此类输出只能作为研究辅助，不应视为建议、推荐或已验证事实；公开案例和生成结果在其时间边界或刷新条件之后也可能不完整、不准确或过期�?
+
+## Start Here
+
+如果你只是想开始使用，先看 [START_HERE.md](START_HERE.md)。它是统一的用户入口卡，包含从一句话启动到完整任务卡、help 类型矩阵和使用边界�?
+
+如果你在 agent 里只�?`hi Prophetis`、`你好 Prophetis`、`Prophetis mode`，或问“怎么�?Prophetis”，默认应该先看�?`START_HERE.md` 的摘要；如果第一句话已经是具体研究任务，agent 应直接路由任务，不用打断�?onboarding�?
+
+如果你使用的是非 Codex / �?Claude Code 产品，或不确定该产品是否会加载本仓库规则，使�?[docs/chatgpt-conversation-instructions.md](docs/chatgpt-conversation-instructions.md)。它是紧凑、自包含的入口门槛：�?agent 留在 Prophetis Mode、而不是按普通助手回答；当产品无法读取本地仓库文件时，可直接整段粘贴�?
+
+如果你想�?Codex、Claude Code 或其他代码型 agent 直接引用本项目，主要文档是：
+
+| 需�?| 文档 |
+| --- | --- |
+| 用户入口、分�?prompt �?help 矩阵 | [START_HERE.md](START_HERE.md) |
+| 唤醒词、身份边界和 memory contract | [Prophetis.md](Prophetis.md) |
+| 一屏版 agent lazy-loading contract | [OPERATING_CONTRACT.md](OPERATING_CONTRACT.md) |
+| Agent 执行 quickstart、路由和输出位置 | [AGENT_QUICKSTART.md](AGENT_QUICKSTART.md) |
+| 最低入口门�?/ 可粘贴指令（�?Codex/Claude 或不确定是否加载规则�?| [docs/chatgpt-conversation-instructions.md](docs/chatgpt-conversation-instructions.md) |
+| Codex 项目规则 | [AGENTS.md](AGENTS.md) |
+| Claude Code 入口 | [CLAUDE.md](CLAUDE.md) |
+
+常用命令�?
+
+| 意图 | 命令 |
+| --- | --- |
+| 用户明确要求更新 Prophetis 本体 | `scripts/Prophetis_update.sh` |
+| `standard`/`deep_dive` 研究前检�?freshness | `scripts/check_updates.sh` |
+
+`scripts/Prophetis_update.sh` 是安全更新入口：�?fetch、拒�?dirty/ahead/diverged
+worktree、只�?fast-forward，并在成功更新后默认运行仓库校验。Freshness check
+只报告状态，不自动更新仓库�?
+
+## Quickstart
+
+最小工作流�?
+
+1. 如果用户明确要更�?Prophetis 本体，运�?`scripts/Prophetis_update.sh`�?
+2. 否则，`standard`/`deep_dive` 研究前用 `scripts/check_updates.sh` 检�?remote freshness（默�?local-first�?4h remote TTL；`quick_map` 跳过；想立刻强制查远端加 `--always-fetch`）。fetch 被拦就降级到缓存�?local refs，不�?freshness check 提权�?
+3. �?[OPERATING_CONTRACT.md](OPERATING_CONTRACT.md)，按 lazy-loading map 只加载必要文件�?
+4. 正式分析前先运行 [loops/analysis-routing.md](loops/analysis-routing.md)�?
+5. 只加载当前任务路由到�?loop、skill �?template�?
+6. 输出�?evidence log、时间边界、刷新条件的产物；证据弱时主动降级结论�?
+7. �?[templates/delivery-checklist.md](templates/delivery-checklist.md) 和相关脚本校验正�?case�?
+
+更多 prompt 类型�?[START_HERE.md](START_HERE.md) �?Help 矩阵�?
+
+## Prophetis 能做什�?
+
+Prophetis 支持�?
+
+- 首次覆盖或重建股票、产业、ETF、宏观变量或市场主题�?thesis
+- 对已�?thesis 做增量监控，区分普通更新和改变 thesis 的证�?
+- 生成市场日报、周报、盘前简报和收盘复盘，区分市场快照、驱动归因、事件日历和研究升级线索
+- 财报、SEC filing、宏观、产业概念和 ETF 专项分析
+- 券商、机构或用户提供研报的结构化解读，拆�?claim、估值假设、预期差�?thesis impact
+- �?evidence log 区分事实、公司口径、假设、观点、市场定价和派生计算
+- 通过受控 ingestion layer 接入用户材料、公开 API 输出和第三方授权数据
+- 维护 expectation map、event delta、decision log、postmortem �?thesis system 对象
+- 在用户提供持仓、权重、mandate 或风险约束后，做 position / portfolio review
+- 对研究方法做 trial、adopted、retired 等方法论状态管�?
+
+Prophetis 不是交易机器人、行情后台程序或自动组合管理器�?
+
+## 核心概念
+
+| 概念 | 含义 | 细节 |
+| --- | --- | --- |
+| `research package` | 正式研究对象的标�?memo、evidence log �?case notes�?| [docs/research-artifacts.md](docs/research-artifacts.md) |
+| `ingestion layer` | 将公开 API、用户文件、vendor 数据和组合导出纳�?Prophetis，同时保留来源、授权、证据和计算边界�?| [data/ingestion-layer.md](data/ingestion-layer.md) |
+| `evidence log` | 为结论和关键观察保留 claim-level source trail�?| [data/evidence-log-schema.md](data/evidence-log-schema.md) |
+| `thesis system` | �?source �?claim、expectation、thesis、event delta、decision log �?postmortem 的持续链路�?| [architecture/thesis-system.md](architecture/thesis-system.md) |
+| `refresh boundary` | `stale_after`、`must_refresh_if` 或等价条件，用于标记旧结论何时不再安全复用�?| [data/time-policy.md](data/time-policy.md) |
+| `controlled vocabulary` | thesis state、readiness、research action �?review 输出使用的稳�?token�?| [data/controlled-vocabulary.md](data/controlled-vocabulary.md) |
+
+## 任务路由
+
+正式任务�?[loops/analysis-routing.md](loops/analysis-routing.md) 开始。常见入口：
+
+| 需�?| 主要入口 | 输出 |
+| --- | --- | --- |
+| 建立或重�?investment thesis | [loops/research-loop.md](loops/research-loop.md) | 标准 research package |
+| 更新已有 thesis | [loops/monitoring-loop.md](loops/monitoring-loop.md) | monitoring summary �?thesis impact |
+| 生成日报、周报、盘前简报或收盘复盘 | [loops/market-briefing-loop.md](loops/market-briefing-loop.md) | market snapshot、driver map、calendar �?escalation queue |
+| 分析财报或指�?| [skills/earnings-report-analysis/](skills/earnings-report-analysis/) | earnings package 和更新决�?|
+| 解读券商/机构/用户提供研报 | [skills/research-report-interpretation/](skills/research-report-interpretation/) | report readout、claim map �?thesis impact |
+| 分析产业或供应链概念 | [skills/industry-concept-analysis/](skills/industry-concept-analysis/) | industry map �?stock handoff |
+| 分析宏观传导 | [skills/macro-economic-analysis/](skills/macro-economic-analysis/) | macro note �?macro overlay |
+| 发现或分�?ETF | [skills/etf-listing-discovery/](skills/etf-listing-discovery/), [skills/etf-listing-analysis/](skills/etf-listing-analysis/) | ETF discovery �?listing package |
+| 评估研究方法 | [loops/methodology-research-loop.md](loops/methodology-research-loop.md) | methodology card �?logs |
+| 复盘真实头寸或组�?| [loops/position-review-loop.md](loops/position-review-loop.md), [loops/portfolio-construction-review-loop.md](loops/portfolio-construction-review-loop.md) | position �?portfolio review artifacts |
+
+单票研究还应运行�?
+
+- [thesis horizon routing](skills/equity-research-core/references/thesis-horizon-routing.md)
+- [framework routing](skills/equity-research-core/references/framework-routing.md)
+- [overlay routing](skills/equity-research-core/references/overlay-routing.md)，如果聚焦证据路径能实质改善结论
+
+## 文档地图
+
+| 主题 | 文档 |
+| --- | --- |
+| 用户入口、Prompt 示例和任务卡 | [START_HERE.md](START_HERE.md) |
+| 最低入口门槛和可粘贴指�?| [docs/chatgpt-conversation-instructions.md](docs/chatgpt-conversation-instructions.md) |
+| Agent contract �?lazy loading | [OPERATING_CONTRACT.md](OPERATING_CONTRACT.md) |
+| Agent 执行 quickstart 和输出位�?| [AGENT_QUICKSTART.md](AGENT_QUICKSTART.md) |
+| 唤醒词和 memory boundary | [Prophetis.md](Prophetis.md) |
+| 研究产物�?validation | [docs/research-artifacts.md](docs/research-artifacts.md) |
+| 模块、loops、skills、cases �?roadmap | [docs/module-map.md](docs/module-map.md) |
+| 来源�?claim 协议 | [data/](data/) |
+| 模板�?delivery checklist | [templates/](templates/) |
+| 案例示例和阅读顺�?| [examples/README.md](examples/README.md) |
+| Thesis System 架构 | [architecture/thesis-system.md](architecture/thesis-system.md) |
+
+## Examples
+
+优先阅读这些 canonical examples，再看旧案例�?
+
+- [cases/aapl-2026-04/](cases/aapl-2026-04/)：单�?research package，包�?memo、evidence log、expectation map、thesis ledger、decision log �?actionability bridge�?
+- [cases/nvts-2026-05/](cases/nvts-2026-05/)：财�?event package，包�?peer verification �?actionability bridge�?
+- [cases/abf-2026-05/](cases/abf-2026-05/)：产业概念分析包示例�?
+- [cases/etf-discovery-2026-05-09/](cases/etf-discovery-2026-05-09/)：ETF discovery 示例�?
+- [cases/etf-listing-analysis-2026-05-09/](cases/etf-listing-analysis-2026-05-09/)：ETF listing analysis 示例�?
+
+所有公开案例都是 historical examples，不应视为实时建议�?
+
+## Validation
+
+校验仓库或正�?case�?
+
+```sh
+python3 scripts/run_quality_gate.py
+python3 scripts/validate_repo.py
+python3 scripts/validate_repo.py cases/<case-id>
+```
+
+SEC supplement �?filing package 校验�?
+
+```sh
+python3 scripts/validate_sec_filing_package.py path/to/sec-supplement-source-note.csv
+python3 scripts/validate_sec_filing_package.py path/to/sec-filing-package-dir
+```
+
+更多 validation �?package 细节�?[docs/research-artifacts.md](docs/research-artifacts.md)�?
+
+## 项目边界
+
+Prophetis 是研究协议，不是 adviser、交易执行器或自动化数据平台�?
+
+- 不生成自主交易或订单�?
+- 没有用户提供的持仓、权重、mandate 和风险预算时，不输出 position-size �?portfolio-construction 结论�?
+- 不把无来源市场观点写成结论�?
+- 证据弱时必须降级结论�?
+- 真实研究输出需�?source trail、时间边界和刷新条件�?
+- 公开案例都是 historical examples，可能已经过期�?
+
+开源政策：
+
+- License: [Apache-2.0](LICENSE)
+- Contribution guide: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Security policy: [SECURITY.md](SECURITY.md)
+- Data/source policy: [DATA_POLICY.md](DATA_POLICY.md)

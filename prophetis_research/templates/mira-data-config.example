@@ -1,0 +1,53 @@
+# Prophetis data substrate â€?local configuration (example).
+#
+# Copy this file to  private/Prophetis-data.env  (gitignored) and fill in your real
+# contact. This file is the standard place for user-specific contact + API keys,
+# kept out of tracked files per the repo's private-state boundary.
+#
+# Format: simple KEY=value, '#' starts a comment. No quotes needed.
+# Resolution order: environment variable > Prophetis_DATA_CONFIG file >
+# private/Prophetis-data.env > ~/.config/Prophetis/Prophetis-data.env
+#
+#   cp templates/Prophetis-data-config.example private/Prophetis-data.env
+#   $EDITOR private/Prophetis-data.env
+
+# --- Contact (required for official-data sources) -------------------------
+# SEC's access policy requires a contactable User-Agent to fetch filings /
+# companyfacts. Adapters that hit SEC refuse to run under the shipped
+# placeholder, so set your REAL email here to enable official-data fetches.
+Prophetis_CONTACT_EMAIL=you@your-domain.com
+
+# Optional display name placed before the email in the User-Agent.
+# Prophetis_CONTACT_NAME=Your Name or Org
+
+# Or set the full User-Agent string directly (overrides the two fields above).
+# Prophetis_HTTP_UA=Your Name you@your-domain.com
+
+# --- Optional API keys (only for keyed sources; not needed for SEC/BLS/Yahoo) -
+# FRED_API_KEY=
+# BEA_API_KEY=
+
+# --- Optional local Interactive Brokers Gateway / TWS connection -----------
+# Keep these in private/Prophetis-data.env or environment variables only.
+# Typical ports:
+#   7497 = TWS paper trading
+#   7496 = TWS live
+#   4002 = IB Gateway paper trading
+#   4001 = IB Gateway live
+# The adapter is read-only and requires optional Python package: ib_insync.
+# Prophetis_IBKR_HOST=127.0.0.1
+# Prophetis_IBKR_PORT=4002
+# Prophetis_IBKR_CLIENT_ID=19
+# Prophetis_IBKR_CLIENT_ID_AUTO=1
+# Prophetis_IBKR_CLIENT_ID_RETRIES=5
+# Prophetis_IBKR_ACCOUNT=
+# Prophetis_IBKR_PORTFOLIO_ID=ibkr_default
+# Prophetis_IBKR_READONLY=1
+# Prophetis_IBKR_MARKET_DATA_TYPE=3
+# Prophetis_IBKR_EXCHANGE=SMART
+# Prophetis_IBKR_CURRENCY=USD
+# Prophetis_IBKR_PRIMARY_EXCHANGE=
+# Prophetis_IBKR_HIST_DURATION=1 Y
+# Prophetis_IBKR_HIST_BAR_SIZE=1 day
+# Prophetis_IBKR_HIST_WHAT=TRADES
+# Prophetis_IBKR_HIST_USE_RTH=1

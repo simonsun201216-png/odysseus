@@ -1,0 +1,26 @@
+# Ruff config for Odysseus AI Workspace
+# Week 1: permissive — just catch real errors, not style
+# See AGENTS.md "Optimization Roadmap — Week 1: lint/typecheck as required checks"
+target-version = "py312"
+
+# Select = error classes that signal real bugs
+[lint]
+select = ["F", "E4", "E7", "E71"]
+
+# ── Suppressions for pre-existing codebase patterns ──────────────
+# E701/E702: multiple statements on one line (colon/semicolon)
+# E711/E712: equality comparisons to None/True/False (pep8 style)
+# E722: bare except (intentional catch-all in many places)
+# E402: module-level import not at top of file (pre-existing pattern)
+# E741: ambiguous variable name (l, O, I — common in short loops)
+# E731: lambda assigned to variable (intentional pattern)
+# F403: star imports unable to detect undefined names (pre-existing)
+# F601: dict key literal repeated (e.g., True == 1 - intentional)
+# F841: unused variable (intentional or left for clarity)
+# F401: unused import (many opt-in/conditional imports)
+# F541: f-string without placeholders
+# F811: redefinition of unused variable
+ignore = [
+    "E701", "E702", "E711", "E712", "E722", "E402", "E741", "E731",
+    "F403", "F601", "F841", "F401", "F541", "F811",
+]

@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <title>Prophetis</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 4L16 22L6 22Z' fill='%23e06c75'/%3E%3Cpath d='M16 8L16 22L24 22Z' fill='%23e06c75' opacity='0.6'/%3E%3Cpath d='M4 24Q10 20 16 24Q22 28 28 24' stroke='%23e06c75' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="manifest" href="/static/manifest.json">
+  <link rel="manifest" href="static/manifest.json">
   <meta name="theme-color" content="#282c34">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -23,7 +23,7 @@
       display: none !important;
     }
   </style>
-  <link rel="apple-touch-icon" href="/static/icon-192.png">
+  <link rel="apple-touch-icon" href="static/icon-192.png">
   <script nonce="{{CSP_NONCE}}">
   // ── Prophetis user info ──
   // If this page is embedded as an iframe inside the Prophetis frontend
@@ -219,12 +219,12 @@
     } catch(e){}
   })();
   </script>
-  <script defer src="/static/lib/highlight.min.js"></script>
+  <script defer src="static/lib/highlight.min.js"></script>
   <!-- Inter font — self-hosted, no Google dependencies -->
   <style>
-    @font-face { font-family: 'Inter'; font-weight: 400; font-style: normal; font-display: swap; src: url('/static/fonts/Inter-Regular.woff2') format('woff2'); }
-    @font-face { font-family: 'Inter'; font-weight: 500; font-style: normal; font-display: swap; src: url('/static/fonts/Inter-Medium.woff2') format('woff2'); }
-    @font-face { font-family: 'Inter'; font-weight: 600; font-style: normal; font-display: swap; src: url('/static/fonts/Inter-SemiBold.woff2') format('woff2'); }
+    @font-face { font-family: 'Inter'; font-weight: 400; font-style: normal; font-display: swap; src: url('static/fonts/Inter-Regular.woff2') format('woff2'); }
+    @font-face { font-family: 'Inter'; font-weight: 500; font-style: normal; font-display: swap; src: url('static/fonts/Inter-Medium.woff2') format('woff2'); }
+    @font-face { font-family: 'Inter'; font-weight: 600; font-style: normal; font-display: swap; src: url('static/fonts/Inter-SemiBold.woff2') format('woff2'); }
   </style>
   <!-- KaTeX CSS is loaded with media="print" so it doesn't block render,
        then flipped to "all" via JS after load. Mermaid init runs once the
@@ -243,14 +243,14 @@
       }, { once: true });
     })();
   </script>
-  <script defer src="/static/js/i18n.js"></script>
-  <link rel="stylesheet" href="/static/style.min.css">
+  <script defer src="static/js/i18n.js"></script>
+  <link rel="stylesheet" href="static/style.min.css">
   <!-- ── Module preloads (parallel download, prevent sequential discovery) ── -->
-  <link rel="modulepreload" href="/static/js/init.js">
-  <link rel="modulepreload" href="/static/bundle.js">
-  <link rel="modulepreload" href="/static/js/a11y.js">
-  <link rel="modulepreload" href="/static/js/meetingDetail.js">
-  <link rel="modulepreload" href="/static/js/kbPanel.js">
+  <link rel="modulepreload" href="static/js/init.js">
+  <link rel="modulepreload" href="static/bundle.js">
+  <link rel="modulepreload" href="static/js/a11y.js">
+  <link rel="modulepreload" href="static/js/meetingDetail.js">
+  <link rel="modulepreload" href="static/js/kbPanel.js">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content, viewport-fit=cover" />
 </head>
 <body>
@@ -1079,7 +1079,7 @@
       if (el) {
         el.textContent = 'Type /setup, then choose Local models or API.';
       }
-      fetch('/api/version').then(function(r){return r.json()}).then(function(d){
+      fetch('api/version').then(function(r){return r.json()}).then(function(d){
         if (d.version) window._appVersion = d.version;
       }).catch(function(){});
     })();
@@ -2371,9 +2371,9 @@
 
 
 <!-- Load modules — init.js MUST be first so the fetch wrapper covers all API calls -->
-<script type="module" src="/static/js/init.js"></script>
-<script type="module" src="/static/bundle.js"></script>  <!-- bundle.js — esbuild-bundled app.js (was 30+ separate module requests) -->
-<script type="module" src="/static/js/a11y.js"></script>
+<script type="module" src="static/js/init.js"></script>
+<script type="module" src="static/bundle.js"></script>  <!-- bundle.js — esbuild-bundled app.js (was 30+ separate module requests) -->
+<script type="module" src="static/js/a11y.js"></script>
 
 <!-- ════════════════════════════════════════════ -->
 <!-- Global Search Overlay (Ctrl+K / Cmd+K)      -->

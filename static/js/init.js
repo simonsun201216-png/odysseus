@@ -35,6 +35,15 @@
   };
 })();
 
+// Propagate parent's __prophetisUser to this window so module-level
+// checks (e.g. `if (window.__prophetisUser)` at line ~60) detect the
+// Prophetis embedding context. The IIFE above reads the parent value
+// into a local variable but never sets it on window.__prophetisUser,
+// which the fresh-session logic requires.
+if (typeof window !== 'undefined' && window.parent !== window && window.parent.__prophetisUser) {
+  window.__prophetisUser = window.parent.__prophetisUser;
+}
+
 import Storage from './storage.js';
 
 function clearFreshComposerRestore() {
